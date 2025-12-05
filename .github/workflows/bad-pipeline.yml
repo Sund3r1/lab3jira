@@ -1,0 +1,64 @@
+# ПЛОХОЙ ПРИМЕР - НЕ ИСПОЛЬЗОВАТЬ В ПРОДАКШЕНЕ!
+name: Bad CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    
+    - name: Build with Maven
+      run: |
+        echo "Building the application..."
+        mvn clean compile
+    
+    - name: Build Docker image
+      run: |
+        docker build -t myapp:latest .
+        # Храним пароли прямо в коде!
+        docker login -u ${{ secrets.DOCKER_USER }} -p "hardcoded_password123"
+        docker push myapp:latest
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    
+    - name: Run tests
+      run: |
+        echo "Running tests..."
+        mvn test
+        # Зависимость от внешнего сервиса
+        curl https://some-external-service.com/healthcheck
+        # Бесполезная задержка
+        sleep 120
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v2
+      with:
+        name: test-results
+        path: target/surefire-reports/
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production..."
+        # Прямой деплой в прод без staging
+        kubectl apply -f k8s/
+        # Использование latest тега
+        kubectl set image deployment/myapp myapp=myapp:latest
+      env:
+        KUBECONFIG: ${{ secrets.KUBECONFIG }}
