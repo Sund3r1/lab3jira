@@ -1,31 +1,16 @@
-name: Good CI/CD - Minimal Working
+name: Test Ubuntu Runner
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main ]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    
+  test-runner:
+    runs-on: ubuntu-22.04  # Используем конкретную версию
     steps:
-    - uses: actions/checkout@v4
-    
-    - uses: actions/setup-python@v5
-      with:
-        python-version: "3.10"
-        
-    - run: pip install -r requirements.txt
-    
-    - run: python -m pytest test_main.py -v
-      env:
-        TEST_ENV: "github"
-
-  deploy-check:
-    needs: test
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    
-    steps:
-    - run: echo "✅ All tests passed - ready for deployment"
-    - run: echo "📝 Commit: ${GITHUB_SHA}"
-    - run: echo "📦 Branch: ${GITHUB_REF_NAME}"
-    - run: echo "🔒 Would use production token from secrets"
+      - name: Check runner
+        run: |
+          echo "✅ Runner is working!"
+          echo "OS: $(uname -a)"
+          echo "Runner: $RUNNER_OS"
+          echo "Workspace: $GITHUB_WORKSPACE"
