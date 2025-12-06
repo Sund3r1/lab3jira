@@ -11,8 +11,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2  # 🦒 Устаревшая версия!
     
-    - name: Install Python (как будто мы в саванне без воды)
-      run: sudo apt-get update && sudo apt-get install -y python3.8 python3-pip
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
       
     - name: Install dependencies (каждый раз с нуля)
       run: pip3 install -r requirements.txt
