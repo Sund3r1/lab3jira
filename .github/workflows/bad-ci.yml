@@ -1,0 +1,29 @@
+name: Bad CI Example
+
+on: [push]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Run everything in one step
+      run: |
+        echo "Installing everything..."
+        sudo apt-get update
+        sudo apt-get install -y python3 python3-pip
+        pip3 install pytest
+        python3 calculator.py
+        python3 -m pytest test_calculator.py
+        echo "Building docker image..."
+        docker build -t myapp:latest .
+        docker push myapp:latest
+    
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production..."
+        # Hardcoded credentials - VERY BAD!
+        scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ./app root@prod-server:/app
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa root@prod-server "systemctl restart myapp"
