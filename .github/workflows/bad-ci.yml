@@ -1,37 +1,50 @@
-name: Bad CI/CD Pipeline
+name: Working Bad CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  build-and-test:
+  demonstrate-bad-practices:
     runs-on: ubuntu-22.04
     
     steps:
-    - uses: actions/checkout@v2
-    
-    - name: Install Python
-      run: sudo apt-get update && sudo apt-get install -y python3.8 python3-pip
+    - name: Checkout code
+      uses: actions/checkout@v4
       
-    - name: Install dependencies
-      run: pip3 install -r requirements.txt
-      
-    - name: Run tests with hardcoded credentials
+    # ПЛОХАЯ ПРАКТИКА: Установка зависимостей без кеширования
+    - name: Install Python (the wrong way)
       run: |
-        export DB_PASSWORD="SuperSecret123!"
-        python3 -m pytest test_main.py
-      
-    - name: Build and push to production (always)
+        sudo apt-get update
+        sudo apt-get install -y python3 python3-pip python3-venv
+        
+    # ПЛОХАЯ ПРАКТИКА: Хардкодинг в логах
+    - name: Show bad logging
       run: |
-        echo "Deploying to production..."
-        # В реальном коде здесь была бы команда деплоя
-        curl -X POST https://api.production.com/deploy \
-          -H "Authorization: Bearer ${{ secrets.PROD_TOKEN }}" \
-          -d '{"force": true}'
-      
-    - name: Cleanup (never runs)
-      if: always()
+        echo "⚠️  WARNING: This is a BAD PRACTICE"
+        echo "Hardcoded test credentials:"
+        echo "  Username: admin"
+        echo "  Password: Admin123!"
+        echo "  API Key: test_sk_1234567890abcdef"
+        
+    # ПЛОХАЯ ПРАКТИКА: Тесты которые не влияют на результат
+    - name: Run tests (ignoring results)
       run: |
-        rm -rf node_modules/
-        rm -f *.log
+        echo "Running tests..."
+        if python -m pytest test_main.py -v; then
+          echo "✅ Tests passed"
+        else
+          echo "❌ Tests failed, but continuing anyway..."
+        fi
+        
+    # ПЛОХАЯ ПРАКТИКА: Деплой без условий
+    - name: Deploy simulation
+      run: |
+        echo "🚀 STARTING DEPLOYMENT SIMULATION"
+        echo ""
+        echo "📋 BAD PRACTICES DEMONSTRATED:"
+        echo "1. 🔓 Hardcoded secrets in logs"
+        echo "2. ⚠️  No condition checks before deploy"
+        echo "3. 🐌 Inefficient dependency installation"
+        echo "4. 🙈 Ignoring test failures"
+        echo
