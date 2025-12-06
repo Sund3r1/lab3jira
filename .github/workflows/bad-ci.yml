@@ -1,7 +1,9 @@
-name: Bad CI/CD Pipeline
+name: Bad CI/CD Pipeline (Fixed Version)
 
 on:
   push:
+    branches: [ main ]
+  pull_request:
     branches: [ main ]
 
 jobs:
@@ -9,29 +11,44 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v3
     
-    - name: Install Python
-      run: sudo apt-get update && sudo apt-get install -y python3.8 python3-pip
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+        cache: 'pip'
       
     - name: Install dependencies
-      run: pip3 install -r requirements.txt
-      
-    - name: Run tests with hardcoded credentials
       run: |
-        export DB_PASSWORD="SuperSecret123!"
-        python3 -m pytest test_main.py
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
       
-    - name: Build and push to production (always)
+    - name: Run tests with environment variables
+      env:
+        TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD || 'test-default' }}
       run: |
-        echo "Deploying to production..."
-        # В реальном коде здесь была бы команда деплоя
-        curl -X POST https://api.production.com/deploy \
-          -H "Authorization: Bearer ${{ secrets.PROD_TOKEN }}" \
-          -d '{"force": true}'
+        python -m pytest test_main.py -v
       
-    - name: Cleanup (never runs)
+    - name: Conditional deployment simulation
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        echo "🚀 Deployment simulation (would deploy to production)"
+        echo "📝 Commit: ${{ github.sha }}"
+        echo "📦 Branch: ${{ github.ref_name }}"
+        echo ""
+        echo "✅ In real scenario, would use:"
+        echo "   URL: \${{ secrets.PROD_URL }}"
+        echo "   Token: *** (from secrets)"
+        
+    - name: Skip deployment for non-main branches
+      if: github.ref != 'refs/heads/main'
+      run: |
+        echo "⏭️  Skipping deployment - not main branch"
+        echo "📝 This is branch: ${{ github.ref_name }}"
+        
+    - name: Cleanup
       if: always()
       run: |
-        rm -rf node_modules/
-        rm -f *.log
+        echo "🧹 Cleanup completed"
