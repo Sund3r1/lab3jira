@@ -1,16 +1,32 @@
-name: Test Ubuntu Runner
+name: Good CI/CD (Fixed)
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  test-runner:
-    runs-on: ubuntu-22.04  # Используем конкретную версию
+  setup-check:
+    runs-on: ubuntu-22.04  # Конкретная версия
     steps:
-      - name: Check runner
+      - name: Check environment
         run: |
-          echo "✅ Runner is working!"
-          echo "OS: $(uname -a)"
-          echo "Runner: $RUNNER_OS"
-          echo "Workspace: $GITHUB_WORKSPACE"
+          echo "Environment check:"
+          echo "Python available: $(which python3 || echo 'not found')"
+          echo "Pip available: $(which pip3 || echo 'not found')"
+          echo "Workspace exists: $(ls -la $GITHUB_WORKSPACE 2>/dev/null | wc -l) files"
+
+  test-python:
+    needs: setup-check
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          
+      - name: Test Python
+        run: |
+          python --version
+          echo "✅ Python is working"
