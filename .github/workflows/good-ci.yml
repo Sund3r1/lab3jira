@@ -26,4 +26,6 @@ jobs:
     
     steps:
     - run: echo "✅ All tests passed - ready for deployment"
-    - run: echo "🔒 Would use: \${{ secrets.PROD_TOKEN }}"
+    - run: echo "📝 Commit: ${GITHUB_SHA}"
+    - run: echo "📦 Branch: ${GITHUB_REF_NAME}"
+    - run: echo "🔒 Would use production token from secrets"
