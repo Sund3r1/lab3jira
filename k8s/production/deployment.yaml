@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ci-cd-demo-production
+  namespace: production
+  labels:
+    app: ci-cd-demo
+    environment: production
+    version: "{{VERSION}}"
+spec:
+  replicas: 3
+  minReadySeconds: 30
+  selector:
+    matchLabels:
+      app: ci-cd-demo
+      environment: production
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: ci-cd-demo
+        environment: production
+        version: "{{VERSION}}"
+    spec:
+      containers:
+      - name: app
+        image: "{{IMAGE}}"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "production"
+        - name: BUILD_NUMBER
+          value: "{{BUILD_NUMBER}}"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 45
+          periodSeconds: 15
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 5
+          successThreshold: 2
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ci-cd-demo-service-production
+  namespace: production
+spec:
+  selector:
+    app: ci-cd-demo
+    environment: production
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: LoadBalancer
