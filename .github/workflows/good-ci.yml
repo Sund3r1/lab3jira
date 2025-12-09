@@ -2,31 +2,51 @@ name: Good CI/CD (Fixed)
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  setup-check:
-    runs-on: ubuntu-22.04  # Конкретная версия
-    steps:
-      - name: Check environment
-        run: |
-          echo "Environment check:"
-          echo "Python available: $(which python3 || echo 'not found')"
-          echo "Pip available: $(which pip3 || echo 'not found')"
-          echo "Workspace exists: $(ls -la $GITHUB_WORKSPACE 2>/dev/null | wc -l) files"
-
-  test-python:
-    needs: setup-check
+  test:
     runs-on: ubuntu-22.04
+    
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
       
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-          
-      - name: Test Python
-        run: |
-          python --version
-          echo "✅ Python is working"
+    # ХОРОШАЯ ПРАКТИКА: Правильная установка Python
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+        
+    # ХОРОШАЯ ПРАКТИКА: Кеширование зависимостей
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pytest
+        
+    # ХОРОШАЯ ПРАКТИКА: Безопасное логирование
+    - name: Show environment info
+      env:
+        TEST_MODE: ${{ secrets.TEST_MODE || 'development' }}
+      run: |
+        echo "Running in $TEST_MODE mode"
+        echo "No secrets exposed here"
+        
+    # ХОРОШАЯ ПРАКТИКА: Тесты влияют на результат
+    - name: Run tests
+      run: |
+        python -m pytest test_main.py -v
+        # Если тесты упадут, workflow остановится здесь
+        
+    # ХОРОШАЯ ПРАКТИКА: Деплой только при успешных тестах
+    - name: Deploy simulation
+      if: success()
+      run: |
+        echo "✅ All tests passed, proceeding with deployment simulation"
+        echo "Deployment would happen here..."
