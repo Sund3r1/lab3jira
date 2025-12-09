@@ -172,6 +172,12 @@ sudo apt-get install -y python3 python3-pip python3-venv
   run: |
     echo "✅ All tests passed, proceeding with deployment"
 ```
+
+### Пайплайн "плохого" CI/CD:
+![omg](jiraf/bad.png)
+
+### Пайплайн "хорошего" CI/CD:
+![omg](jiraf/god.png)
 # Выводы: ключевые улучшения CI/CD
 
 ## 📈 Основные изменения
