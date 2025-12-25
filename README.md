@@ -27,7 +27,7 @@ jobs:
         
     - name: Show bad logging
       run: |
-        echo "⚠️  WARNING: This is a BAD PRACTICE"
+        echo "  WARNING: This is a BAD PRACTICE"
         echo "Hardcoded test credentials:"
         echo "  Username: admin"
         echo "  Password: Admin123!"
@@ -37,20 +37,20 @@ jobs:
       run: |
         echo "Running tests..."
         if python -m pytest test_main.py -v; then
-          echo "✅ Tests passed"
+          echo " Tests passed"
         else
-          echo "❌ Tests failed, but continuing anyway..."
+          echo " Tests failed, but continuing anyway..."
         fi
         
     - name: Deploy simulation
       run: |
-        echo "🚀 STARTING DEPLOYMENT SIMULATION"
+        echo " STARTING DEPLOYMENT SIMULATION"
         echo ""
-        echo "📋 BAD PRACTICES DEMONSTRATED:"
-        echo "1. 🔓 Hardcoded secrets in logs"
-        echo "2. ⚠️  No condition checks before deploy"
-        echo "3. 🐌 Inefficient dependency installation"
-        echo "4. 🙈 Ignoring test failures"
+        echo " BAD PRACTICES DEMONSTRATED:"
+        echo "1.  Hardcoded secrets in logs"
+        echo "2.  No condition checks before deploy"
+        echo "3.  Inefficient dependency installation"
+        echo "4.  Ignoring test failures"
 ```
 
 ## "Хороший" CI/CD файл
@@ -100,20 +100,20 @@ jobs:
     - name: Deploy simulation
       if: success()
       run: |
-        echo "✅ All tests passed, proceeding with deployment simulation"
+        echo " All tests passed, proceeding with deployment simulation"
         echo "Deployment would happen here..."
 ```
 
 ## Объяснение!
 ### 1. Работа с секретами
-**Плохая практика:❌ Проблема: Секреты в открытом виде в логах. Доступны всем, кто видит логи.
+**Плохая практика: Проблема: Секреты в открытом виде в логах. Доступны всем, кто видит логи.
 ```
 echo "Hardcoded test credentials:"
 echo "  Username: admin"
 echo "  Password: Admin123!"
 ```
 
-**Хорошая практика:✅ Исправление: Секреты хранятся в GitHub Secrets, не выводятся в логи.
+**Хорошая практика: Исправление: Секреты хранятся в GitHub Secrets, не выводятся в логи.
 ```
 env:
   TEST_MODE: ${{ secrets.TEST_MODE || 'development' }}
@@ -123,16 +123,16 @@ run: |
 ```
 
 ### 2. Обработка тестов
-**Плохая практика:❌ Проблема: Игнорирование результатов тестов. Деплой продолжается даже при падении тестов.
+**Плохая практика: Проблема: Игнорирование результатов тестов. Деплой продолжается даже при падении тестов.
 ```
 if python -m pytest test_main.py -v; then
-  echo "✅ Tests passed"
+  echo " Tests passed"
 else
-  echo "❌ Tests failed, but continuing anyway..."
+  echo " Tests failed, but continuing anyway..."
 fi
 ```
 
-**Хорошая практика:✅ Исправление: Если тесты упадут, команда вернет ненулевой код выхода и workflow остановится.
+**Хорошая практика: Исправление: Если тесты упадут, команда вернет ненулевой код выхода и workflow остановится.
 ```
 run: |
   python -m pytest test_main.py -v
@@ -141,12 +141,12 @@ run: |
 
 ### 3. Установка зависимостей
 
-**Плохая практика:❌ Проблема: Установка с нуля каждый раз, без кеширования, медленно.
+**Плохая практика: Проблема: Установка с нуля каждый раз, без кеширования, медленно.
 ```
 sudo apt-get update
 sudo apt-get install -y python3 python3-pip python3-venv
 ```
-**Хорошая практика:✅ Исправление: Использование готовых действий и кеширование.
+**Хорошая практика: Исправление: Использование готовых действий и кеширование.
 ```
 - uses: actions/setup-python@v4
   with:
@@ -159,18 +159,18 @@ sudo apt-get install -y python3 python3-pip python3-venv
 
 ### 4. Управление деплоем
 
-**Плохая практика:❌ Проблема: Деплой всегда выполняется, нет условий.
+**Плохая практика: Проблема: Деплой всегда выполняется, нет условий.
 ```
 - name: Deploy simulation
   run: |
     echo "🚀 STARTING DEPLOYMENT SIMULATION"
 ```
-**Хорошая практика:✅ Исправление: Деплой только при успешном выполнении всех предыдущих шагов.
+**Хорошая практика: Исправление: Деплой только при успешном выполнении всех предыдущих шагов.
 ```
 - name: Deploy simulation
   if: success()
   run: |
-    echo "✅ All tests passed, proceeding with deployment"
+    echo " All tests passed, proceeding with deployment"
 ```
 
 ### Пайплайн "плохого" CI/CD:
